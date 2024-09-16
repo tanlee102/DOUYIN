@@ -13,6 +13,7 @@ const scrapeLogic = async (res) => {
       process.env.NODE_ENV === "production"
         ? process.env.PUPPETEER_EXECUTABLE_PATH
         : puppeteer.executablePath(),
+    headless: false
   });
   try {
     const page = await browser.newPage();
@@ -21,8 +22,12 @@ const scrapeLogic = async (res) => {
     page.on('request', request => {
       console.log('Request URL:', request.url());
     });
-  
-    await page.goto("https://www.douyin.com/video/7415201797968579859", { waitUntil: 'networkidle2', timeout: 260000 }); // Increase timeout to 60 seconds
+    
+    page.on('response', async (response) => {
+      console.log('Response URL:', response.url());
+    });
+
+    await page.goto("https://x.com/KalleXIV/status/1835352967920128355", { waitUntil: 'networkidle2', timeout: 260000 }); // Increase timeout to 60 seconds
   
     // Extract video sources from the page
     const videoSources = await page.evaluate(() => {
