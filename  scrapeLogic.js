@@ -4,16 +4,15 @@ require("dotenv").config();
 const scrapeLogic = async (res) => {
   const browser = await puppeteer.launch({
     args: [
-      "--disable-setuid-sandbox",
-      "--no-sandbox",
-      "--single-process",
-      "--no-zygote",
+      // "--disable-setuid-sandbox",
+      // "--no-sandbox",
+      // "--single-process",
+      // "--no-zygote",
     ],
     executablePath:
       process.env.NODE_ENV === "production"
         ? process.env.PUPPETEER_EXECUTABLE_PATH
         : puppeteer.executablePath(),
-    headless: false
   });
   try {
     const page = await browser.newPage();
@@ -27,7 +26,7 @@ const scrapeLogic = async (res) => {
       console.log('Response URL:', response.url());
     });
 
-    await page.goto("https://x.com/KalleXIV/status/1835352967920128355", { waitUntil: 'networkidle2', timeout: 260000 }); // Increase timeout to 60 seconds
+    await page.goto("https://www.douyin.com/video/7414726877996125451", { waitUntil: 'networkidle2', timeout: 260000 }); // Increase timeout to 60 seconds
   
     // Extract video sources from the page
     const videoSources = await page.evaluate(() => {
