@@ -45,7 +45,7 @@ const scrapeDouyin = async (videoId) => {
     const targetUrl = `https://www.douyin.com/video/${videoId}`;
     await page.goto(targetUrl, {
       waitUntil: "networkidle2",
-      timeout: 260000,
+      timeout: 30000,
     });
 
     // Đợi cho đến khi Promise resolve (nghĩa là đã tìm thấy response)
