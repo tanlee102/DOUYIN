@@ -16,8 +16,7 @@ const scrapeDouyin = async (videoId) => {
       "--single-process",
       "--no-zygote",
     ],
-    executablePath:
-      process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
+    // Không cần cấu hình executablePath, Puppeteer sẽ sử dụng Chromium mặc định trong image.
   });
 
   try {
