@@ -4,10 +4,9 @@ const puppeteer = require("puppeteer");
 
 // Hàm thực hiện việc scrape với Puppeteer dựa trên videoId nhận được
 const scrapeDouyin = async (videoId) => {
-  let targetFound = false;
   let bitRateData = null;
 
-  // Khởi tạo browser với executablePath được thiết lập qua biến môi trường hoặc mặc định
+  // Khởi tạo browser với cấu hình headless và args phù hợp
   const browser = await puppeteer.launch({
     headless: true,
     args: [
@@ -16,45 +15,43 @@ const scrapeDouyin = async (videoId) => {
       "--single-process",
       "--no-zygote",
     ],
-    // Không cần cấu hình executablePath, Puppeteer sẽ sử dụng Chromium mặc định trong image.
   });
 
   try {
     const page = await browser.newPage();
 
-    // Lắng nghe event 'response' để tìm response chứa chuỗi chỉ định
-    page.on("response", async (response) => {
-      const responseUrl = response.url();
-      if (
-        !targetFound &&
-        responseUrl.includes("https://www.douyin.com/aweme/v1/web/aweme/detail/")
-      ) {
-        targetFound = true;
-        console.log("Tìm thấy response:", responseUrl);
-        try {
-          // Lấy dữ liệu JSON từ response
-          const data = await response.json();
-          // Trích xuất trường bit_rate nếu có
-          bitRateData =
-            data.aweme_detail &&
-            data.aweme_detail.video &&
-            data.aweme_detail.video.bit_rate
-              ? data.aweme_detail.video.bit_rate
-              : null;
-        } catch (error) {
-          console.error("Lỗi khi xử lý JSON:", error);
-        }
-      }
-    });
-
     // Xây dựng URL Douyin dựa trên videoId
     const targetUrl = `https://www.douyin.com/video/${videoId}`;
     await page.goto(targetUrl, {
-      waitUntil: "networkidle2",
+      waitUntil: "domcontentloaded",
       timeout: 260000,
     });
-    // Chờ thêm để đảm bảo response mong muốn được bắt
+
+    // Sử dụng waitForResponse để đợi response có URL chứa chuỗi chỉ định
+    const response = await page.waitForResponse((response) =>
+      response.url().includes("https://www.douyin.com/aweme/v1/web/aweme/detail/")
+    );
+
+    console.log("Tìm thấy response:", response.url());
+
+    try {
+      // Lấy dữ liệu JSON từ response
+      const data = await response.json();
+      // Trích xuất trường bit_rate nếu có
+      bitRateData =
+        data.aweme_detail &&
+        data.aweme_detail.video &&
+        data.aweme_detail.video.bit_rate
+          ? data.aweme_detail.video.bit_rate
+          : null;
+    } catch (error) {
+      console.error("Lỗi khi xử lý JSON:", error);
+    }
+
+    // Thêm thời gian chờ nếu cần thiết
     await page.waitForTimeout(5000);
+  } catch (error) {
+    console.error("Lỗi khi scrape:", error);
   } finally {
     await browser.close();
   }
